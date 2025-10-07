@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Inpainting & Cropping Tool</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#222" />
+</head>
+<body>
+  <header>
+    <!-- Top bar: title (left) + file chooser (right) -->
+    <div class="topbar">
+      <h1>Inpainting & Cropping Tool</h1>
+
+      <!-- Moved to the right of the title on the same line -->
+      <label class="file" title="Choose an image to inpaint">
+        <input type="file" id="fileInput" accept="image/*" />
+        <span class="file-btn">Choose Image</span>
+      </label>
+    </div>
+
+    <p class="note">
+      Upload an image and use the toolbar to select areas to edit or crop the image.
+    </p>
+
+    <!-- Centered toolbar -->
+    <div class="controls" role="toolbar" aria-label="Inpainting tools">
+
+      <!-- Pointer / normal tool -->
+      <button id="cursorTool" class="icon-btn" title="Pointer tool (return to normal)">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 2l7 19 2-8 8 2L3 2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <!-- Brush size -->
+      <label class="brush" title="Adjust brush size">
+        <span>Brush</span>
+        <input type="range" id="brushSize" min="1" max="128" step="1" value="65" />
+        <span id="brushReadout" aria-live="polite">65px</span>
+      </label>
+
+      <!-- Clear mask (icon) -->
+      <button id="clearMask" class="icon-btn" title="Clear mask">
+        <!-- Eraser icon -->
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 16l7-7 8 8-3 3H6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M10 9l4-4 7 7-4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <!-- Zoom in -->
+      <button id="zoomIn" class="icon-btn" title="Zoom in (click image to zoom)">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M21 21l-4.35-4.35" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M11 8v6M8 11h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <!-- Zoom reset 100% placed between zoom in & out -->
+      <button id="zoomReset" class="icon-btn" title="Reset zoom to 100%">
+        <svg viewBox="0 0 64 24" aria-hidden="true">
+          <rect x="1" y="1" width="62" height="22" rx="6" fill="none" stroke="currentColor" stroke-width="2"/>
+          <text x="32" y="16" text-anchor="middle" font-size="12" fill="currentColor"
+                font-family="ui-sans-serif, system-ui">100%</text>
+        </svg>
+      </button>
+
+      <!-- Zoom out -->
+      <button id="zoomOut" class="icon-btn" title="Zoom out (click image to zoom out)">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M21 21l-4.35-4.35" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M8 11h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <!-- Crop (NEW) -->
+      <button id="cropTool" class="icon-btn" title="Crop (drag to select area)">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 2v4H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M18 22v-4h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <rect x="7" y="7" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </button>
+
+      <!-- Save (updated to proper save icon) -->
+      <button id="saveCombined" class="icon-btn" title="Save combined image">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 4h16v16H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M4 4h16v6H4zM8 10v10M16 10v10" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <rect x="9" y="5" width="6" height="3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <div id="canvasContainer">
+      <canvas id="mainCanvas"></canvas>
+      <canvas id="maskCanvas"></canvas>
+      <!-- UI overlay (selection rectangle, crop guides) -->
+      <canvas id="uiCanvas" aria-hidden="true"></canvas>
+    </div>
+  </main>
+
+  <!-- Prompt Modal -->
+  <dialog id="promptDialog">
+    <form method="dialog" class="dialog-frame" id="promptForm">
+      <div class="dialog-head">
+        <strong>Copy Prompt & Image</strong>
+        <div class="grow"></div>
+        <button type="button" id="copyPrompt" class="btn">Copy Prompt</button>
+        <button type="button" id="copyImage" class="btn">Copy Image</button>
+        <button type="button" id="copyChatGPT" class="btn">Copy for ChatGPT</button>
+        <button value="close" class="btn">Close</button>
+      </div>
+      <textarea id="promptTextarea" readonly></textarea>
+      <div class="dialog-foot">
+        <span>Click "Copy All" to copy both the prompt and image for pasting into ChatGPT.</span>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="script.js"></script>
+  <script>
+    // Register service worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('service-worker.js');
+      });
+    }
+  </script>
+</body>
+</html>
