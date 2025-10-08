@@ -769,3 +769,10 @@
 document.getElementById('fileSelector')?.addEventListener('click', () => {
   document.getElementById('fileInput')?.click();
 });
+
+// Clear image button - refresh the page
+document.getElementById('clearImage').addEventListener('click', () => {
+  if (confirm('Clear the current image and start over?')) {
+    location.reload();
+  }
+});

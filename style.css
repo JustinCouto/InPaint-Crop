@@ -134,6 +134,29 @@ h1 {
   box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.15);
 }
 
+/* Smaller icon button for dialog */
+.icon-btn-small {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid #ccc;
+  background: #fff;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+.icon-btn-small:hover {
+  background: #f4f4f4;
+}
+
+.icon-btn-small svg {
+  width: 16px;
+  height: 16px;
+}
+
 /* Brush control */
 .brush {
   display: inline-flex;
@@ -159,6 +182,7 @@ h1 {
 /* Main content area */
 main {
   padding: var(--pad);
+  position: relative;
 }
 
 /* Canvas container */
@@ -283,4 +307,46 @@ dialog {
 
 .btn:hover {
   background: #f1f1f1;
+}
+
+/* Trash button positioned on bottom border */
+.trash-btn {
+  position: absolute;
+  bottom: var(--pad);
+  left: 50%;
+  transform: translate(-50%, 50%);
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 2px solid #e5e5e5;
+  background: #fff;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.trash-btn:hover {
+  background: #fee;
+  border-color: #fcc;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+}
+
+.trash-btn:hover svg {
+  color: #dc2626;
+}
+
+.trash-btn svg {
+  width: 20px;
+  height: 20px;
+  color: #999;
+  transition: color 0.2s;
+}
+
+.zoom-reset-btn svg {
+  width: 28px;
+  height: 28px;
 }
