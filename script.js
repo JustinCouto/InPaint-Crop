@@ -695,6 +695,14 @@
      if (e.ctrlKey || e.metaKey) e.preventDefault();
    }, { passive: false });
    
+   // Click canvas container to open file selector when no image is loaded
+   container.addEventListener('click', (e) => {
+     // Only trigger if no image is loaded (checking for the placeholder)
+     if (!originalImage && e.target === container) {
+       fileInput?.click();
+     }
+   });
+   
    // Tool buttons
    cursorToolBtn?.addEventListener('click', activateCursorTool);
    zoomInBtn?.addEventListener('click', toggleZoomInTool);
