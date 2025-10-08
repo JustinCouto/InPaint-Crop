@@ -9,23 +9,27 @@
   <meta name="theme-color" content="#222">
 </head>
 <body>
+  <input type="file" id="fileInput" accept="image/*" style="display: none;">
   <header>
     <div class="topbar">
       <h1>Inpainting & Cropping Tool</h1>
-      <label class="file" title="Choose an image to inpaint">
-        <input type="file" id="fileInput" accept="image/*">
-        <span class="file-btn">Choose Image</span>
-      </label>
     </div>
 
     <p class="note">
       Upload an image and use the toolbar to select areas to edit or crop the image.
     </p>
 
-    <div class="controls" role="toolbar" aria-label="Inpainting tools">
-      <button id="cursorTool" class="icon-btn" title="Pointer tool (return to normal)">
+    <div class="controls" role="toolbar" aria-label="Inpainting tools">      
+
+      <button id="fileSelector" class="icon-btn file" title="Select a File">
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M3 2l7 19 2-8 8 2L3 2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <button id="cursorTool" class="icon-btn" title="Inpainting Brush">
+        <svg viewBox="0 0 297 297" aria-hidden="true">
+          <path d="M249.774,121.802l-0.008-111.81c0-5.513-4.469-9.981-9.98-9.981h-33.201c-4.297,0-8.111,2.749-9.469,6.825l-7.125,21.375 l-7.137-21.383c-1.359-4.073-5.172-6.821-9.467-6.821L57.198,0c-0.002,0-0.002,0-0.002,0c-2.646,0-5.186,1.052-7.057,2.923 c-1.873,1.873-2.924,4.412-2.924,7.059l0.008,111.813c-1.287,0.934-2.514,1.972-3.662,3.119c-5.666,5.666-8.785,13.18-8.785,21.155 v9.836c0.002,16.512,13.436,29.944,29.945,29.944l47.756,0.004l0.002,75.129c-0.002,9.622,3.746,18.668,10.553,25.471 c6.805,6.801,15.852,10.547,25.473,10.547c0.004,0,0.008,0,0.012,0c9.621,0,18.666-3.744,25.469-10.544 c6.807-6.804,10.555-15.851,10.549-25.472l-0.004-75.126l47.75,0.004l0,0c7.976,0,15.49-3.121,21.156-8.787 c5.668-5.667,8.787-13.181,8.787-21.156v-9.84C262.222,136.098,257.306,127.245,249.774,121.802z M67.187,116.125l-0.008-96.161 l9.566,0.001v45.79c0,5.513,4.471,9.981,9.982,9.981c5.512,0,9.981-4.469,9.981-9.981V19.966l13.738,0.001v68.236 c0,5.513,4.469,9.982,9.98,9.982c5.514,0,9.982-4.47,9.982-9.982V19.969h10.93v23.33c0,5.512,4.469,9.981,9.98,9.981 c5.512,0,9.982-4.47,9.982-9.981V19.971h4.893l14.334,42.95c1.361,4.074,5.174,6.822,9.471,6.821 c4.295-0.001,8.109-2.75,9.467-6.825l14.314-42.942h16.025l0.004,96.159L67.187,116.125z M164.571,260.99 c0.002,4.286-1.666,8.316-4.699,11.347c-3.033,3.031-7.064,4.7-11.359,4.7c-0.002,0-0.004,0-0.004,0 c-4.295,0-8.33-1.671-11.363-4.703c-3.033-3.031-4.703-7.063-4.703-11.351l-0.002-75.129l32.127,0.003L164.571,260.99z M232.286,136.099c5.5,0.005,9.973,4.481,9.975,9.981v9.84c0,2.644-1.045,5.144-2.939,7.04c-1.896,1.895-4.396,2.939-7.039,2.939 l-167.559-0.013c-5.504,0-9.982-4.479-9.984-9.982v-9.836c0-2.644,1.045-5.145,2.939-7.04c1.896-1.896,4.396-2.939,7.041-2.939 L232.286,136.099z" fill="currentColor"/>
         </svg>
       </button>
 
@@ -37,8 +41,8 @@
 
       <button id="clearMask" class="icon-btn" title="Clear mask">
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M3 16l7-7 8 8-3 3H6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-          <path d="M10 9l4-4 7 7-4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M3 7v6h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
 
@@ -51,9 +55,9 @@
       </button>
 
       <button id="zoomReset" class="icon-btn" title="Reset zoom to 100%">
-        <svg viewBox="0 0 64 24" aria-hidden="true">
-          <rect x="1" y="1" width="62" height="22" rx="6" fill="none" stroke="currentColor" stroke-width="2"/>
-          <text x="32" y="16" text-anchor="middle" font-size="12" fill="currentColor" font-family="ui-sans-serif, system-ui">100%</text>
+        <svg viewBox="0 0 56 24" aria-hidden="true">
+          <rect x="2" y="2" width="52" height="20" rx="10" fill="none" stroke="currentColor" stroke-width="3"/>
+          <text x="28" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor" font-family="ui-sans-serif, system-ui">100%</text>
         </svg>
       </button>
 
@@ -75,9 +79,8 @@
 
       <button id="saveCombined" class="icon-btn" title="Save combined image">
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4 4h16v16H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-          <path d="M4 4h16v6H4zM8 10v10M16 10v10" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-          <rect x="9" y="5" width="6" height="3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
     </div>

@@ -72,12 +72,6 @@ h1 {
   position: relative;
 }
 
-/* File input */
-.file {
-  position: absolute;
-  right: 0;
-}
-
 .file input[type="file"] {
   position: absolute;
   inset: 0;

@@ -764,3 +764,8 @@
      resetZoom,
      setZoomMode,
    };
+
+
+document.getElementById('fileSelector')?.addEventListener('click', () => {
+  document.getElementById('fileInput')?.click();
+});
