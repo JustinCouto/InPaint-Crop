@@ -1,3 +1,4 @@
+/* FIXED: remove stray token and proper root vars */
 :root {
   --gap: 14px;
   --pad: 18px;
@@ -21,9 +22,22 @@ header {
   top: 0; 
   z-index: 10;
   background: #fff; 
-  border-bottom: var(--border); 
+  border-bottom: none; /* remove full-width border */
   padding: var(--pad);
-  text-align: center;  /* Add this line */
+  text-align: center;
+  position: relative; /* needed for the pseudo-element */
+}
+header::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0;
+  width: 80vw;         /* 80% of viewport */
+  max-width: 1600px;   /* match canvas max-width */
+  height: 1px;
+  background: #e5e5e5; /* same color as --border */
+  pointer-events: none;
 }
 
 /* Update title styles */
@@ -127,23 +141,46 @@ main { padding: var(--pad); }
 
 /* Canvas stack */
 #canvasContainer {
-  position: relative; margin: 0 auto;
-  width: 90vw; max-width: 1600px;
-  background: #fff; border: var(--border); border-radius: 12px;
-  box-shadow: 0 1px 0 rgba(0,0,0,.03); overflow: hidden; /* ensures bottom corners clip */
+  position: relative;
+  margin: 0 auto;
+  width: 80vw;
+  max-width: 1600px;
+  min-height: 240px;
+  background: #fff;
+  border: var(--border);
+  border-radius: 12px;
+  box-shadow: 0 1px 0 rgba(0,0,0,.03);
 }
+
+/* ensure canvases fill the container and stack correctly */
 #mainCanvas, #maskCanvas, #uiCanvas {
-  position: absolute; inset: 0; display: block; transform-origin: 0 0; will-change: transform;
+  position: absolute;
+  inset: 0;          /* top:0; right:0; bottom:0; left:0; */
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 12px;
 }
 #mainCanvas { z-index: 0; }
 #maskCanvas { z-index: 1; cursor: crosshair; }
 #uiCanvas   { z-index: 2; pointer-events: none; }
 
-/* Placeholder overlay */
+/* Watermark / placeholder when no image is present */
 #canvasContainer::before {
-  content: "Upload an image to begin";
-  position: absolute; inset: 0; display: grid; place-items: center;
-  color: #aaa; font-size: 14px; pointer-events: none; z-index: 3;
+  content: "Select an image from your device...";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgba(0,0,0,0.16);
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  padding: 12px;
+  pointer-events: auto; /* allow clicks to open picker */
+  cursor: pointer;
+  z-index: 4; /* above canvases */
+  user-select: none;
 }
 #canvasContainer.has-image::before { display: none; }
 
