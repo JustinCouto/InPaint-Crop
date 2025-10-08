@@ -1,82 +1,90 @@
-/* FIXED: remove stray token and proper root vars */
 :root {
   --gap: 14px;
   --pad: 18px;
   --border: 1px solid #e5e5e5;
   --bg: #fafafa;
+  --radius: 8px;
+  --radius-lg: 12px;
 }
 
-* { box-sizing: border-box; }
-html, body { height: 100%; margin: 0; }
+/* Reset */
+* {
+  box-sizing: border-box;
+}
+
+html,
 body {
+  height: 100%;
   margin: 0;
+}
+
+body {
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans";
   color: #111;
   background: #fff;
-  overflow: hidden; /* app-style layout; prevent rogue page scrollbars */
+  overflow: hidden;
 }
 
 /* Header */
 header {
-  position: sticky; 
-  top: 0; 
+  position: sticky;
+  top: 0;
   z-index: 10;
-  background: #fff; 
-  border-bottom: none; /* remove full-width border */
+  background: #fff;
   padding: var(--pad);
   text-align: center;
-  position: relative; /* needed for the pseudo-element */
 }
+
 header::after {
   content: "";
   position: absolute;
   left: 50%;
-  transform: translateX(-50%);
   bottom: 0;
-  width: 80vw;         /* 80% of viewport */
-  max-width: 1600px;   /* match canvas max-width */
+  transform: translateX(-50%);
+  width: 80vw;
+  max-width: 1600px;
   height: 1px;
-  background: #e5e5e5; /* same color as --border */
+  background: #e5e5e5;
   pointer-events: none;
 }
 
-/* Update title styles */
-h1 { 
-  margin: 0; 
+h1 {
+  margin: 0;
   font-size: 22px;
-  text-align: center;  /* Add this line */
-  width: 100%;        /* Add this line */
+  text-align: center;
+  width: 100%;
 }
 
-/* Update note paragraph */
-.note { 
-  margin: 8px auto;   /* Change from '8px 0 0' */
-  color: #555; 
+.note {
+  margin: 8px auto;
+  max-width: 600px;
+  color: #555;
   font-size: 14px;
-  text-align: center;  /* Add this line */
-  max-width: 600px;   /* Add this line */
+  text-align: center;
 }
 
-/* New topbar: title left, file chooser right on same line */
+/* Topbar layout */
 .topbar {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--gap);
-  justify-content: center;  /* Change from 'space-between' */
-  position: relative;       /* Add this line */
+  position: relative;
 }
 
-/* Custom file input */
+/* File input */
 .file {
-  position: absolute;   /* Add this line */
-  right: 0;            /* Add this line */
+  position: absolute;
+  right: 0;
 }
+
 .file input[type="file"] {
   position: absolute;
   inset: 0;
   opacity: 0;
   cursor: pointer;
 }
+
 .file .file-btn {
   display: inline-flex;
   align-items: center;
@@ -84,23 +92,26 @@ h1 {
   padding: 8px 12px;
   border: 1px solid #ddd;
   background: var(--bg);
-  border-radius: 8px;
+  border-radius: var(--radius);
   cursor: pointer;
   user-select: none;
 }
-.file .file-btn:hover { background: #f1f1f1; }
 
-/* Centered controls row */
+.file .file-btn:hover {
+  background: #f1f1f1;
+}
+
+/* Controls toolbar */
 .controls {
   margin-top: 12px;
   display: flex;
   flex-wrap: wrap;
   gap: var(--gap);
   align-items: center;
-  justify-content: center;     /* << centered tools */
+  justify-content: center;
 }
 
-/* Buttons (icon style) */
+/* Icon buttons */
 .icon-btn {
   width: 38px;
   height: 38px;
@@ -109,14 +120,27 @@ h1 {
   place-items: center;
   border: 1px solid #ccc;
   background: #fff;
-  border-radius: 8px;
+  border-radius: var(--radius);
   cursor: pointer;
   transition: background 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
-.icon-btn:hover { background: #f4f4f4; }
-.icon-btn svg { width: 20px; height: 20px; }
 
-/* Brush control grouping */
+.icon-btn:hover {
+  background: #f4f4f4;
+}
+
+.icon-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.icon-btn.active {
+  background: #eaeaea;
+  border-color: #999;
+  box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.15);
+}
+
+/* Brush control */
 .brush {
   display: inline-flex;
   align-items: center;
@@ -126,20 +150,24 @@ h1 {
   background: var(--bg);
   border-radius: 10px;
 }
-.brush span:first-child { color: #333; font-size: 14px; }
-#brushReadout { min-width: 44px; text-align: right; color: #555; }
 
-/* Active tool (zoom mode + crop) */
-.controls button.active {
-  background: #eaeaea;
-  border-color: #999;
-  box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.15);
+.brush span:first-child {
+  color: #333;
+  font-size: 14px;
 }
 
-/* Main area */
-main { padding: var(--pad); }
+#brushReadout {
+  min-width: 44px;
+  text-align: right;
+  color: #555;
+}
 
-/* Canvas stack */
+/* Main content area */
+main {
+  padding: var(--pad);
+}
+
+/* Canvas container */
 #canvasContainer {
   position: relative;
   margin: 0 auto;
@@ -148,76 +176,117 @@ main { padding: var(--pad); }
   min-height: 240px;
   background: #fff;
   border: var(--border);
-  border-radius: 12px;
-  box-shadow: 0 1px 0 rgba(0,0,0,.03);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, .03);
 }
 
-/* ensure canvases fill the container and stack correctly */
-#mainCanvas, #maskCanvas, #uiCanvas {
+/* Canvas layers */
+#mainCanvas,
+#maskCanvas,
+#uiCanvas {
   position: absolute;
-  inset: 0;          /* top:0; right:0; bottom:0; left:0; */
+  inset: 0;
   width: 100%;
   height: 100%;
   display: block;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
 }
-#mainCanvas { z-index: 0; }
-#maskCanvas { z-index: 1; cursor: crosshair; }
-#uiCanvas   { z-index: 2; pointer-events: none; }
 
-/* Watermark / placeholder when no image is present */
+#mainCanvas {
+  z-index: 0;
+}
+
+#maskCanvas {
+  z-index: 1;
+  cursor: crosshair;
+}
+
+#uiCanvas {
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Placeholder text */
 #canvasContainer::before {
   content: "Select an image from your device...";
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
-  color: rgba(0,0,0,0.16);
+  color: rgba(0, 0, 0, 0.16);
   font-size: 16px;
   font-weight: 600;
   text-align: center;
   padding: 12px;
-  pointer-events: auto; /* allow clicks to open picker */
+  pointer-events: auto;
   cursor: pointer;
-  z-index: 4; /* above canvases */
+  z-index: 4;
   user-select: none;
 }
-#canvasContainer.has-image::before { display: none; }
+
+#canvasContainer.has-image::before {
+  display: none;
+}
 
 /* Dialog */
 dialog {
   width: min(900px, 92vw);
-  border: 1px solid #ddd; border-radius: 12px; padding: 0;
-  box-shadow: 0 20px 60px rgba(0,0,0,.25);
-}
-.dialog-frame { display: flex; flex-direction: column; gap: 0; }
-.dialog-head, .dialog-foot { display: flex; align-items: center; gap: 8px; padding: 12px 14px; background: #f8f8f8; border-bottom: 1px solid #eee; }
-.dialog-foot { border-top: 1px solid #eee; border-bottom: 0; }
-.dialog-head .grow { flex: 1; }
-#promptTextarea {
-  width: 100%; height: 55vh; padding: 12px 14px; border: 0; resize: vertical;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-  font-size: 12px; line-height: 1.45;
-}
-.btn { padding: 6px 10px; border: 1px solid #ccc; background: #fff; border-radius: 8px; cursor: pointer; }
-.btn:hover { background: #f1f1f1; }
-/* Add this to your existing CSS */
-#imageDataContainer {
-  display: none;  /* Hidden container for image data */
+  padding: 0;
+  border: 1px solid #ddd;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .25);
 }
 
-/* Update dialog buttons spacing */
-.dialog-head {
+.dialog-frame {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.dialog-head,
+.dialog-foot {
+  display: flex;
+  align-items: center;
   gap: 8px;
   padding: 12px 14px;
+  background: #f8f8f8;
 }
 
-/* Add button variants */
-.btn.primary {
-  background: #0066cc;
-  color: white;
-  border-color: #0052a3;
+.dialog-head {
+  border-bottom: 1px solid #eee;
 }
-.btn.primary:hover {
-  background: #0052a3;
+
+.dialog-foot {
+  border-top: 1px solid #eee;
+  font-size: 14px;
+  color: #666;
+}
+
+.dialog-head .grow {
+  flex: 1;
+}
+
+#promptTextarea {
+  width: 100%;
+  height: 55vh;
+  padding: 12px 14px;
+  border: 0;
+  resize: vertical;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+/* Buttons */
+.btn {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  background: #fff;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn:hover {
+  background: #f1f1f1;
 }
