@@ -885,3 +885,11 @@ document.getElementById('clearImage').addEventListener('click', () => {
     location.reload();
   }
 });
+
+// Set version number from shared version.js
+if (typeof APP_VERSION !== 'undefined') {
+  const versionLabel = document.getElementById('versionLabel');
+  if (versionLabel) {
+    versionLabel.textContent = APP_VERSION;
+  }
+}

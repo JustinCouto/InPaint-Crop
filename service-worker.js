@@ -1,10 +1,12 @@
-const CACHE_VERSION = 'v1.8'; // Update this version number to trigger updates
-const CACHE_NAME = `inpaint-crop-cache-${CACHE_VERSION}`;
+importScripts('version.js');
+
+const CACHE_NAME = `inpaint-crop-cache-${APP_VERSION}`;
 const ASSETS = [
   './',
   './index.html',
   './script.js',
   './style.css',
+  './version.js',  // Add this to cached assets
   './manifest.webmanifest',
   './icon-192.png',
   './icon-512.png'

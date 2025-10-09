@@ -246,6 +246,20 @@ main {
   display: none;
 }
 
+/* Version label */
+.version-label {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.25);
+  font-weight: 500;
+  user-select: none;
+  pointer-events: none;
+  z-index: 5;
+  font-family: ui-monospace, monospace;
+}
+
 /* Dialog */
 dialog {
   width: min(900px, 92vw);
