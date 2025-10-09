@@ -72,6 +72,11 @@
    
    // Misc state
    let isSaving = false;
+
+   // Pinch-to-zoom state
+   let pinchStartDistance = null;
+   let pinchStartZoom = null;
+   let pinchCenter = null;
    
    /* =========================
       ===== Utility Helpers =====
@@ -174,6 +179,19 @@
      }, BUTTON_FEEDBACK_MS);
    }
    
+   // Pinch-to-zoom helpers
+   function getTouchDistance(touches) {
+     const dx = touches[0].clientX - touches[1].clientX;
+     const dy = touches[0].clientY - touches[1].clientY;
+     return Math.sqrt(dx * dx + dy * dy);
+   }
+
+   function getTouchCenter(touches, containerRect) {
+     const x = (touches[0].clientX + touches[1].clientX) / 2 - containerRect.left;
+     const y = (touches[0].clientY + touches[1].clientY) / 2 - containerRect.top;
+     return { x, y };
+   }
+
    /* =========================
       ===== Zoom / Pan =====
       ========================= */
@@ -701,6 +719,77 @@
 
    // Add touch-action CSS to prevent default touch behaviors
    maskCanvas.style.touchAction = 'none';
+
+   // Pinch-to-zoom for touch devices
+   maskCanvas.addEventListener('touchstart', (e) => {
+     if (!originalImage) return;
+     
+     // Check for two-finger pinch
+     if (e.touches.length === 2) {
+       e.preventDefault();
+       
+       // Disable painting during pinch
+       painting = false;
+       cropSelecting = false;
+       
+       // Store initial pinch state
+       pinchStartDistance = getTouchDistance(e.touches);
+       pinchStartZoom = zoom;
+       
+       const rect = container.getBoundingClientRect();
+       pinchCenter = getTouchCenter(e.touches, rect);
+     }
+   }, { passive: false });
+
+   maskCanvas.addEventListener('touchmove', (e) => {
+     if (!originalImage) return;
+     
+     // Handle pinch-to-zoom
+     if (e.touches.length === 2 && pinchStartDistance !== null) {
+       e.preventDefault();
+       
+       const currentDistance = getTouchDistance(e.touches);
+       const scale = currentDistance / pinchStartDistance;
+       
+       // Calculate new zoom level
+       const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, pinchStartZoom * scale));
+       
+       // Get current pinch center
+       const rect = container.getBoundingClientRect();
+       const currentCenter = getTouchCenter(e.touches, rect);
+       
+       // Apply zoom using the pinch center as the zoom point
+       updateContainerWH();
+       const cx = (pinchCenter.x - offsetX) / zoom;
+       const cy = (pinchCenter.y - offsetY) / zoom;
+       
+       const targetX = currentCenter.x;
+       const targetY = currentCenter.y;
+       
+       offsetX = targetX - newZoom * cx;
+       offsetY = targetY - newZoom * cy;
+       zoom = newZoom;
+       
+       clampPan();
+       applyTransform();
+     }
+   }, { passive: false });
+
+   maskCanvas.addEventListener('touchend', (e) => {
+     // Reset pinch state when fingers are lifted
+     if (e.touches.length < 2) {
+       pinchStartDistance = null;
+       pinchStartZoom = null;
+       pinchCenter = null;
+     }
+   }, { passive: false });
+
+   maskCanvas.addEventListener('touchcancel', (e) => {
+     // Reset pinch state on cancel
+     pinchStartDistance = null;
+     pinchStartZoom = null;
+     pinchCenter = null;
+   }, { passive: false });
    
    // Prevent native browser zoom
    container.addEventListener('wheel', (e) => {
