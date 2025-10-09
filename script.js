@@ -8,10 +8,13 @@
    const VIEWPORT_SCALE = 0.90;
    const SAFE_BOTTOM = 12;
    const MIN_AVAIL_H = 240;
-   const EXPORT_FILENAME = 'combined-image.png';
    const MAX_AUTO_ZOOM = 32;
    const RESIZE_DEBOUNCE_MS = 100;
    const BUTTON_FEEDBACK_MS = 1200;
+   const MAX_HISTORY_SIZE = 50;
+   const COMBINED_IMAGE_FILENAME = 'combined-image.png';
+   const DEFAULT_BRUSH_SIZE = 65;
+   const CROP_HANDLE_SIZE = 6;
    
    /* =========================
       ===== Elements =====
@@ -51,6 +54,7 @@
    /* =========================
       ===== App State =====
       ========================= */
+   let currentImageFile = null;    // For clipboard operations
    let originalImage = null;       // HTMLImageElement
    let displayW = 0, displayH = 0; // fitted canvas size
    let containerW = 0, containerH = 0;
@@ -58,7 +62,7 @@
    // Brush
    let painting = false;
    let lastX = 0, lastY = 0;
-   let brushSize = Number(brushSlider?.value || 40);
+   let brushSize = Number(brushSlider?.value || DEFAULT_BRUSH_SIZE);
 
    // Undo/Redo history for inpainting
    let maskHistory = [];
@@ -75,8 +79,6 @@
    let cropStart = null;           // {x,y} in canvas coords
    let cropRect = null;            // {x,y,w,h} in canvas coords if applied
    
-   // Misc state
-   let isSaving = false;
 
    // Pinch-to-zoom state
    let pinchStartDistance = null;
@@ -87,6 +89,13 @@
       ===== Utility Helpers =====
       ========================= */
    const allCanvases = () => [mainCanvas, maskCanvas, uiCanvas];
+   
+   function getEventClientCoords(evt) {
+     return {
+       x: evt.touches ? evt.touches[0].clientX : evt.clientX,
+       y: evt.touches ? evt.touches[0].clientY : evt.clientY
+     };
+   }
    
    function vh() {
      return window.visualViewport?.height ?? window.innerHeight;
@@ -293,6 +302,7 @@
      container.classList.add('has-image');
      setAllSizes(displayW, displayH, preserveMask ? snapshot : null);
    
+     // Force reflow to ensure layout is updated before drawing
      void container.offsetWidth;
      await new Promise(requestAnimationFrame);
    
@@ -334,7 +344,7 @@
      maskHistoryIndex = maskHistory.length - 1;
      
      // Limit history to prevent memory issues (keep last 50 states)
-     if (maskHistory.length > 50) {
+     if (maskHistory.length > MAX_HISTORY_SIZE) {
        maskHistory.shift();
        maskHistoryIndex--;
      }
@@ -398,9 +408,10 @@
    }
    
    function getPointerCanvasPos(evt) {
-     const r = container.getBoundingClientRect();
-     const sx = (evt.touches ? evt.touches[0].clientX : evt.clientX) - r.left;
-     const sy = (evt.touches ? evt.touches[0].clientY : evt.clientY) - r.top;
+     const rect = container.getBoundingClientRect();
+     const coords = getEventClientCoords(evt);
+     const sx = coords.x - rect.left;
+     const sy = coords.y - rect.top;
      return screenToCanvas(sx, sy);
    }
    
@@ -435,7 +446,7 @@
    
      uiCtx.setLineDash([]);
      uiCtx.fillStyle = '#ffffff';
-     const s = 6;
+     const s = CROP_HANDLE_SIZE;
      uiCtx.fillRect(rect.x - s / 2, rect.y - s / 2, s, s);
      uiCtx.fillRect(rect.x + rect.w - s / 2, rect.y - s / 2, s, s);
      uiCtx.fillRect(rect.x - s / 2, rect.y + rect.h - s / 2, s, s);
@@ -534,31 +545,29 @@
    
      if (cropMode) {
        cropSelecting = true;
-       const p = getPointerCanvasPos(e);
-       cropStart = p;
-       drawCropMarquee(normalizeRect(p, p));
+       const point = getPointerCanvasPos(e);
+       cropStart = point;
+       drawCropMarquee(normalizeRect(point, point));
        return;
      }
    
      if (zoomMode !== 'none') {
-       const r = container.getBoundingClientRect();
-       // Fix: Handle both mouse and touch events
-       const sx = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
-       const sy = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+       const rect = container.getBoundingClientRect();
+       const coords = getEventClientCoords(e);
+       const sx = coords.x - rect.left;
+       const sy = coords.y - rect.top;
        const factor = (zoomMode === 'in') ? ZOOM_IN_FACTOR : ZOOM_OUT_FACTOR;
        zoomAt(factor, sx, sy);
        return;
      }
-   
-     maskCanvas.setPointerCapture(e.pointerId);
-     
+
      maskCanvas.setPointerCapture(e.pointerId);
      painting = true;
    
-     const p = getPointerCanvasPos(e);
-     lastX = p.x;
-     lastY = p.y;
-     drawTo(p.x, p.y, true);
+     const point = getPointerCanvasPos(e);
+     lastX = point.x;
+     lastY = point.y;
+     drawTo(point.x, point.y, true);
    }
    
    function handlePointerMove(e) {
@@ -570,15 +579,15 @@
      }
    
      if (cropMode && cropSelecting) {
-       const p = getPointerCanvasPos(e);
-       const rect = normalizeRect(cropStart, p);
+       const point = getPointerCanvasPos(e);
+       const rect = normalizeRect(cropStart, point);
        drawCropMarquee(rect);
        return;
      }
    
      if (!painting) return;
-     const p = getPointerCanvasPos(e);
-     drawTo(p.x, p.y);
+     const point = getPointerCanvasPos(e);
+     drawTo(point.x, point.y);
    }
    
    function handlePointerUp(e) {
@@ -586,8 +595,8 @@
    
      if (cropMode && cropSelecting) {
        cropSelecting = false;
-       const p = getPointerCanvasPos(e);
-       const rect = normalizeRect(cropStart, p);
+       const point = getPointerCanvasPos(e);
+       const rect = normalizeRect(cropStart, point);
    
        if (rect.w <= 1 || rect.h <= 1) {
          uiCtx.clearRect(0, 0, uiCanvas.width, uiCanvas.height);
@@ -633,6 +642,28 @@
    /* =========================
       ===== Save & Export =====
       ========================= */
+   async function handleSave() {
+     if (!originalImage) {
+       alert('Upload an image first.');
+       return;
+     }
+   
+     try {
+       const exportCanvas = renderCombinedCanvas();
+       const imageBlob = await canvasToBlob(exportCanvas, 'image/png');
+       const imageFile = new File([imageBlob], COMBINED_IMAGE_FILENAME, { type: 'image/png' });
+   
+       if (promptDialog && typeof promptDialog.showModal === 'function') {
+         if (promptTextarea) promptTextarea.value = buildInpaintPrompt();
+         currentImageFile = imageFile;
+         promptDialog.showModal();
+       }
+     } catch (err) {
+       console.error('Failed to prepare image:', err);
+       alert('Sorry—there was a problem preparing the image.');
+     }
+   }
+   
    function buildInpaintPrompt() {
      const width = cropRect ? Math.round(cropRect.w) : displayW;
      const height = cropRect ? Math.round(cropRect.h) : displayH;
@@ -679,31 +710,6 @@
      return full;
    }
    
-   async function handleSave() {
-     if (isSaving) return;
-     if (!originalImage) {
-       alert('Upload an image first.');
-       return;
-     }
-     isSaving = true;
-   
-     try {
-       const exportCanvas = renderCombinedCanvas();
-       const imageBlob = await canvasToBlob(exportCanvas, 'image/png');
-       const imageFile = new File([imageBlob], 'combined-image.png', { type: 'image/png' });
-   
-       if (promptDialog && typeof promptDialog.showModal === 'function') {
-         if (promptTextarea) promptTextarea.value = buildInpaintPrompt();
-         window.__inpaintImageFile = imageFile;
-         promptDialog.showModal();
-       }
-     } catch (err) {
-       console.error('Failed to prepare image:', err);
-       alert('Sorry—there was a problem preparing the image.');
-     } finally {
-       isSaving = false;
-     }
-   }
    
    /* =========================
       ===== Clipboard Helpers =====
@@ -714,12 +720,16 @@
        return true;
      } catch (err) {
        console.error('Failed to copy text:', err);
-       // Fallback for older browsers
+       // Legacy fallback for older browsers (execCommand is deprecated but still works)
        const textarea = document.createElement('textarea');
        textarea.value = text;
+       textarea.style.position = 'fixed';
+       textarea.style.opacity = '0';
+       document.body.appendChild(textarea);
        textarea.select();
-       document.execCommand('copy');
-       return true;
+       const success = document.execCommand('copy'); // Deprecated but used as fallback
+       document.body.removeChild(textarea);
+       return success;
      }
    }
    
@@ -763,9 +773,16 @@
        if (img.decode) {
          try {
            await img.decode();
-         } catch {}
+         } catch (decodeErr) {
+           // Image decode failed but we can still use it
+           console.warn('Image decode failed:', decodeErr);
+         }
        }
        originalImage = img;
+       
+       // Clear previous image file reference
+       currentImageFile = null;
+       
        await redrawAll(false);
        
        // Reset mask history when new image is loaded
@@ -773,9 +790,13 @@
        
        try {
          URL.revokeObjectURL(img.src);
-       } catch {}
+       } catch (revokeErr) {
+         // URL revocation failed, not critical
+         console.warn('Failed to revoke object URL:', revokeErr);
+       }
      } catch (err) {
        console.error('Failed to load image:', err);
+       alert('Failed to load the image. Please try a different file.');
      }
    });
    
@@ -900,6 +921,14 @@
    });
    cropToolBtn?.addEventListener('click', toggleCropTool);
    
+   // Clear image button
+   const clearImageBtn = document.getElementById('clearImage');
+   clearImageBtn?.addEventListener('click', () => {
+     if (confirm('Clear the current image and start over?')) {
+       location.reload();
+     }
+   });
+   
    // Keyboard shortcuts
    window.addEventListener('keydown', handleKeyboardZoom);
    
@@ -922,12 +951,17 @@
          showButtonFeedback(copyPromptBtn, 'Copy Prompt', 'Copied!');
        } catch (err) {
          console.error('Failed to copy prompt:', err);
+         alert('Failed to copy prompt to clipboard');
        }
      });
    
      copyImageBtn.addEventListener('click', async () => {
        try {
-         await copyImageToClipboard(window.__inpaintImageFile);
+         if (!currentImageFile) {
+           alert('No image available to copy');
+           return;
+         }
+         await copyImageToClipboard(currentImageFile);
          showButtonFeedback(copyImageBtn, 'Copy Image', 'Copied!');
        } catch (err) {
          console.error('Failed to copy image:', err);
@@ -937,7 +971,11 @@
    
      copyChatGPTBtn.addEventListener('click', async () => {
        try {
-         await copyForChatGPT(promptTextarea.value, window.__inpaintImageFile);
+         if (!currentImageFile) {
+           alert('No image available to copy');
+           return;
+         }
+         await copyForChatGPT(promptTextarea.value, currentImageFile);
          showButtonFeedback(copyChatGPTBtn, 'Copy for ChatGPT', 'Copied!');
        } catch (err) {
          console.error('Failed to copy:', err);
@@ -948,34 +986,26 @@
      });
    }
    
-   // Initialize
+   /* =========================
+      ===== Initialization =====
+      ========================= */
    setBrush(brushSize);
    setZoomModeUI();
    
-   // Debug API
-   window.__inpaintDebug = {
-     get zoom() { return zoom; },
-     get offset() { return ({ offsetX, offsetY }); },
-     resetZoom,
-     setZoomMode,
-   };
-
-
-document.getElementById('fileSelector')?.addEventListener('click', () => {
-  document.getElementById('fileInput')?.click();
-});
-
-// Clear image button - refresh the page
-document.getElementById('clearImage').addEventListener('click', () => {
-  if (confirm('Clear the current image and start over?')) {
-    location.reload();
-  }
-});
-
-// Set version number from shared version.js
-if (typeof APP_VERSION !== 'undefined') {
-  const versionLabel = document.getElementById('versionLabel');
-  if (versionLabel) {
-    versionLabel.textContent = APP_VERSION;
-  }
-}
+   // Set version number from shared version.js
+   if (typeof APP_VERSION !== 'undefined') {
+     const versionLabel = document.getElementById('versionLabel');
+     if (versionLabel) {
+       versionLabel.textContent = APP_VERSION;
+     }
+   }
+   
+   // Debug API (for development/troubleshooting)
+   if (typeof window !== 'undefined') {
+     window.__inpaintDebug = {
+       get zoom() { return zoom; },
+       get offset() { return ({ offsetX, offsetY }); },
+       resetZoom,
+       setZoomMode,
+     };
+   }
