@@ -445,6 +445,9 @@
    function handlePointerDown(e) {
      if (!originalImage) return;
    
+     // Prevent default touch behaviors
+     e.preventDefault();
+   
      if (cropMode) {
        cropSelecting = true;
        const p = getPointerCanvasPos(e);
@@ -455,8 +458,9 @@
    
      if (zoomMode !== 'none') {
        const r = container.getBoundingClientRect();
-       const sx = e.clientX - r.left;
-       const sy = e.clientY - r.top;
+       // Fix: Handle both mouse and touch events
+       const sx = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+       const sy = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
        const factor = (zoomMode === 'in') ? ZOOM_IN_FACTOR : ZOOM_OUT_FACTOR;
        zoomAt(factor, sx, sy);
        return;
@@ -473,6 +477,11 @@
    
    function handlePointerMove(e) {
      if (!originalImage) return;
+   
+     // Prevent default touch behaviors during painting
+     if (painting || cropSelecting) {
+       e.preventDefault();
+     }
    
      if (cropMode && cropSelecting) {
        const p = getPointerCanvasPos(e);
@@ -689,6 +698,9 @@
    maskCanvas.addEventListener('pointerup', handlePointerUp);
    maskCanvas.addEventListener('pointerleave', () => { painting = false; });
    maskCanvas.addEventListener('pointercancel', () => { painting = false; });
+
+   // Add touch-action CSS to prevent default touch behaviors
+   maskCanvas.style.touchAction = 'none';
    
    // Prevent native browser zoom
    container.addEventListener('wheel', (e) => {

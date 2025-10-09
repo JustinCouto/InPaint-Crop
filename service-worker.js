@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1.6'; // Update this version number to trigger updates
+const CACHE_VERSION = 'v1.7'; // Update this version number to trigger updates
 const CACHE_NAME = `inpaint-crop-cache-${CACHE_VERSION}`;
 const ASSETS = [
   './',
