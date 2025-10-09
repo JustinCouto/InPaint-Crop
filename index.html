@@ -19,13 +19,7 @@
       Upload an image and use the toolbar to select areas to edit or crop the image.
     </p>
 
-    <div class="controls" role="toolbar" aria-label="Inpainting tools">      
-
-      <button id="fileSelector" class="icon-btn file" title="Select a File">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
+    <div class="controls" role="toolbar" aria-label="Inpainting tools">    
 
       <button id="cursorTool" class="icon-btn" title="Inpainting Brush">
         <svg viewBox="0 0 297 297" aria-hidden="true">
@@ -87,6 +81,12 @@
 
   <main>
     <div id="canvasContainer">
+      <div class="placeholder-prompt">        
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Select an image from your device...</span>
+      </div>
       <canvas id="mainCanvas"></canvas>
       <canvas id="maskCanvas"></canvas>
       <canvas id="uiCanvas" aria-hidden="true"></canvas>

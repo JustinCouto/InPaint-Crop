@@ -225,13 +225,14 @@ main {
 }
 
 /* Placeholder text */
-#canvasContainer::before {
-  content: "Select an image from your device...";
+.placeholder-prompt {
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
-  color: rgba(0, 0, 0, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: rgba(0, 0, 0, 0.25);
   font-size: 16px;
   font-weight: 600;
   text-align: center;
@@ -242,7 +243,13 @@ main {
   user-select: none;
 }
 
-#canvasContainer.has-image::before {
+.placeholder-prompt svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+#canvasContainer.has-image .placeholder-prompt {
   display: none;
 }
 

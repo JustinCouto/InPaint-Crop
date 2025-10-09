@@ -799,8 +799,12 @@
    // Click canvas container to open file selector when no image is loaded
    container.addEventListener('click', (e) => {
      // Only trigger if no image is loaded (checking for the placeholder)
-     if (!originalImage && e.target === container) {
-       fileInput?.click();
+     if (!originalImage) {
+       const placeholder = container.querySelector('.placeholder-prompt');
+       // Check if clicked on container, placeholder, or any child of placeholder
+       if (e.target === container || e.target === placeholder || placeholder?.contains(e.target)) {
+         fileInput?.click();
+       }
      }
    });
    
