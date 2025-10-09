@@ -33,10 +33,17 @@
         <span id="brushReadout" aria-live="polite">65px</span>
       </label>
 
-      <button id="clearMask" class="icon-btn" title="Clear mask">
+      <button id="undoMask" class="icon-btn" title="Undo inpainting stroke" disabled>
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M3 7v6h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <button id="redoMask" class="icon-btn" title="Redo inpainting stroke" disabled>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M21 7v6h-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
 

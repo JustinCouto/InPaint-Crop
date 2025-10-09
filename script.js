@@ -19,7 +19,8 @@
    const fileInput = document.getElementById('fileInput');
    const brushSlider = document.getElementById('brushSize');
    const brushReadout = document.getElementById('brushReadout');
-   const clearBtn = document.getElementById('clearMask');
+   const undoBtn = document.getElementById('undoMask');
+   const redoBtn = document.getElementById('redoMask');
    const saveCombined = document.getElementById('saveCombined');
    
    // Layout
@@ -58,6 +59,10 @@
    let painting = false;
    let lastX = 0, lastY = 0;
    let brushSize = Number(brushSlider?.value || 40);
+
+   // Undo/Redo history for inpainting
+   let maskHistory = [];
+   let maskHistoryIndex = -1;
    
    // Zoom/pan
    let zoom = 1;                   // scale
@@ -317,6 +322,67 @@
      if (brushReadout) brushReadout.textContent = `${brushSize}px`;
    }
    
+   function saveMaskState() {
+     // Remove any redo history when making a new change
+     if (maskHistoryIndex < maskHistory.length - 1) {
+       maskHistory = maskHistory.slice(0, maskHistoryIndex + 1);
+     }
+     
+     // Capture current mask state
+     const imageData = maskCtx.getImageData(0, 0, maskCanvas.width, maskCanvas.height);
+     maskHistory.push(imageData);
+     maskHistoryIndex = maskHistory.length - 1;
+     
+     // Limit history to prevent memory issues (keep last 50 states)
+     if (maskHistory.length > 50) {
+       maskHistory.shift();
+       maskHistoryIndex--;
+     }
+     
+     updateUndoRedoButtons();
+   }
+   
+   function undoMask() {
+     if (maskHistoryIndex <= 0) return;
+     
+     maskHistoryIndex--;
+     const imageData = maskHistory[maskHistoryIndex];
+     maskCtx.putImageData(imageData, 0, 0);
+     updateUndoRedoButtons();
+   }
+   
+   function redoMask() {
+     if (maskHistoryIndex >= maskHistory.length - 1) return;
+     
+     maskHistoryIndex++;
+     const imageData = maskHistory[maskHistoryIndex];
+     maskCtx.putImageData(imageData, 0, 0);
+     updateUndoRedoButtons();
+   }
+   
+   function updateUndoRedoButtons() {
+     if (undoBtn) {
+       undoBtn.disabled = maskHistoryIndex <= 0;
+     }
+     if (redoBtn) {
+       redoBtn.disabled = maskHistoryIndex >= maskHistory.length - 1;
+     }
+   }
+   
+   function resetMaskHistory() {
+     maskHistory = [];
+     maskHistoryIndex = -1;
+     
+     // Save the initial empty state
+     if (maskCanvas.width > 0 && maskCanvas.height > 0) {
+       const imageData = maskCtx.getImageData(0, 0, maskCanvas.width, maskCanvas.height);
+       maskHistory.push(imageData);
+       maskHistoryIndex = 0;
+     }
+     
+     updateUndoRedoButtons();
+   }
+   
    function drawTo(x, y, begin = false) {
      maskCtx.lineCap = 'round';
      maskCtx.lineJoin = 'round';
@@ -485,6 +551,8 @@
      }
    
      maskCanvas.setPointerCapture(e.pointerId);
+     
+     maskCanvas.setPointerCapture(e.pointerId);
      painting = true;
    
      const p = getPointerCanvasPos(e);
@@ -531,10 +599,14 @@
        exitCropMode();
        drawCropMarquee(null);
        return;
-     }
-   
-     painting = false;
-   }
+      }
+    
+      if (painting) {
+        painting = false;
+        // Save state after completing the stroke
+        saveMaskState();
+      }
+    }
    
    function handleKeyboardZoom(e) {
      if (!(e.ctrlKey || e.metaKey)) return;
@@ -695,6 +767,10 @@
        }
        originalImage = img;
        await redrawAll(false);
+       
+       // Reset mask history when new image is loaded
+       resetMaskHistory();
+       
        try {
          URL.revokeObjectURL(img.src);
        } catch {}
@@ -705,9 +781,15 @@
    
    // Brush controls
    brushSlider?.addEventListener('input', (e) => setBrush(e.target.value));
-   clearBtn?.addEventListener('click', () => {
+   
+   undoBtn?.addEventListener('click', () => {
      if (!originalImage) return;
-     maskCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
+     undoMask();
+   });
+
+   redoBtn?.addEventListener('click', () => {
+     if (!originalImage) return;
+     redoMask();
    });
    
    // Canvas interactions

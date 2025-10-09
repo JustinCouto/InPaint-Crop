@@ -371,3 +371,15 @@ dialog {
   width: 28px;
   height: 28px;
 }
+
+/* Disabled button state */
+.icon-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  background: #fafafa;
+}
+
+.icon-btn:disabled:hover {
+  background: #fafafa;
+  border-color: #ccc;
+}
