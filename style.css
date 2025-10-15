@@ -244,55 +244,6 @@ main {
   font-family: ui-monospace, monospace;
 }
 
-/* Dialog */
-dialog {
-  width: min(900px, 92vw);
-  padding: 0;
-  border: 1px solid #ddd;
-  border-radius: var(--radius-lg);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, .25);
-}
-
-.dialog-frame {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.dialog-head,
-.dialog-foot {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 14px;
-  background: #f8f8f8;
-}
-
-.dialog-head {
-  border-bottom: 1px solid #eee;
-}
-
-.dialog-foot {
-  border-top: 1px solid #eee;
-  font-size: 14px;
-  color: #666;
-}
-
-.dialog-head .grow {
-  flex: 1;
-}
-
-#promptTextarea {
-  width: 100%;
-  height: 55vh;
-  padding: 12px 14px;
-  border: 0;
-  resize: vertical;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-  font-size: 12px;
-  line-height: 1.45;
-}
-
 /* Buttons */
 .btn {
   padding: 6px 10px;
@@ -354,4 +305,212 @@ dialog {
   opacity: 0.3;
   cursor: not-allowed;
   background: #fafafa;
+}
+
+/* AI Menu */
+.ai-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.ai-menu-content {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .25);
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  padding: 24px;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.ai-menu-section {
+  margin-bottom: 20px;
+}
+
+.ai-menu-section:last-of-type {
+  margin-bottom: 0;
+}
+
+.ai-section-title {
+  margin: 0 0 16px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #111;
+  text-align: left;
+}
+
+.ai-icon-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.ai-icon-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 8px;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.ai-icon-btn:hover {
+  background: #f8f8f8;
+  border-color: #999;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.ai-icon-btn:active {
+  transform: translateY(0);
+}
+
+.ai-icon {
+  width: 48px;
+  height: 48px;
+  color: #333;
+  flex-shrink: 0;
+}
+
+.ai-icon-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #555;
+  text-align: center;
+}
+
+.ai-replace-textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.ai-replace-textarea:focus {
+  outline: none;
+  border-color: #999;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+}
+
+.ai-replace-textarea::placeholder {
+  color: #aaa;
+  font-style: italic;
+  font-size: 17px;
+}
+
+.ai-menu-divider {
+  height: 1px;
+  background: #e5e5e5;
+  margin: 20px 0;
+}
+
+.ai-menu-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 1;
+}
+
+.ai-menu-close:hover {
+  background: #f4f4f4;
+  border-color: #999;
+}
+
+.ai-menu-close svg {
+  width: 18px;
+  height: 18px;
+  color: #666;
+}
+
+/* Button feedback state */
+.ai-icon-btn.copied {
+  background: #e8f5e9;
+  border-color: #4caf50;
+}
+
+.ai-icon-btn.copied .ai-icon-label::after {
+  content: ' ✓';
+  color: #4caf50;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .ai-menu-content {
+    padding: 20px;
+    max-width: 95vw;
+  }
+  
+  .ai-icon-buttons {
+    gap: 10px;
+  }
+  
+  .ai-icon-btn {
+    padding: 12px 6px;
+  }
+  
+  .ai-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .ai-icon-label {
+    font-size: 12px;
+  }
 }

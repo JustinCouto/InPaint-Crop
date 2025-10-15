@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#222">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="icon" type="image/png" href="icon-192.png">
 </head>
 <body>
   <input type="file" id="fileInput" accept="image/*" style="display: none;">
@@ -107,26 +109,130 @@
     </button>
   </main>
 
-  <dialog id="promptDialog">
-    <form method="dialog" class="dialog-frame" id="promptForm">
-      <div class="dialog-head">
-        <strong>Copy Prompt & Image</strong>
-        <div class="grow"></div>
-        <button type="button" id="copyPrompt" class="btn">Copy Prompt</button>
-        <button type="button" id="copyImage" class="btn">Copy Image</button>
-        <button type="button" id="copyChatGPT" class="btn">Copy for ChatGPT</button>
-        <button value="close" formmethod="dialog" class="icon-btn-small" title="Close">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-      </div>
-      <textarea id="promptTextarea" readonly></textarea>
-      <div class="dialog-foot">
-        Use the buttons above to copy the prompt text, image, or both for your AI tool.
-      </div>
-    </form>
-  </dialog>
+  <!-- AI Menu (replaces dialog) -->
+  <div id="aiMenu" class="ai-menu" style="display: none;">
+    <div class="ai-menu-content">
+      <!-- Remove Section -->
+      <section class="ai-menu-section">
+        <h3 class="ai-section-title">Remove Painted Area</h3>
+        <div class="ai-icon-buttons">
+          <button type="button" class="ai-icon-btn" data-action="remove-prompt" title="Copy prompt only">
+            <svg viewBox="0 0 48 48" aria-hidden="true" class="ai-icon">
+              <!-- Squiggly lines icon -->
+              <path d="M8 12 Q 14 8, 20 12 T 32 12 T 44 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M8 20 Q 14 16, 20 20 T 32 20 T 44 20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M8 28 Q 14 24, 20 28 T 32 28 T 44 28" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M8 36 Q 14 32, 20 36 T 32 36 T 44 36" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+            <span class="ai-icon-label">Copy Prompt</span>
+          </button>
+          
+          <button type="button" class="ai-icon-btn" data-action="remove-image" title="Copy image only">
+            <svg viewBox="0 0 48 48" aria-hidden="true" class="ai-icon">
+              <!-- Sun with rays icon -->
+              <circle cx="24" cy="16" r="6" fill="currentColor"/>
+              <line x1="24" y1="6" x2="24" y2="2" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="30.5" y1="9.5" x2="33.5" y2="6.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="34" y1="16" x2="38" y2="16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="30.5" y1="22.5" x2="33.5" y2="25.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="17.5" y1="9.5" x2="14.5" y2="6.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="14" y1="16" x2="10" y2="16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="17.5" y1="22.5" x2="14.5" y2="25.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- Mountain/image indicator -->
+              <rect x="6" y="30" width="36" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+              <path d="M6 44 L 14 36 L 22 40 L 30 32 L 42 42" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="ai-icon-label">Copy Image</span>
+          </button>
+          
+          <button type="button" class="ai-icon-btn" data-action="remove-both" title="Copy prompt and image">
+            <svg viewBox="0 0 48 48" aria-hidden="true" class="ai-icon">
+              <!-- Combined: sun + squiggly lines -->
+              <circle cx="30" cy="10" r="4" fill="currentColor"/>
+              <line x1="30" y1="3" x2="30" y2="1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="34.5" y1="5.5" x2="36.5" y2="3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="37" y1="10" x2="39" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="25.5" y1="5.5" x2="23.5" y2="3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="23" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M6 22 Q 10 19, 14 22 T 22 22 T 30 22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M6 28 Q 10 25, 14 28 T 22 28 T 30 28" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M6 34 Q 10 31, 14 34 T 22 34 T 30 34" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M6 40 Q 10 37, 14 40 T 22 40 T 30 40" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+            <span class="ai-icon-label">Copy Both</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Divider -->
+      <div class="ai-menu-divider"></div>
+
+      <!-- Replace Section -->
+      <section class="ai-menu-section">
+        <h3 class="ai-section-title">Replace Painted Area</h3>
+        <textarea 
+          id="replaceText" 
+          class="ai-replace-textarea" 
+          placeholder="Describe what you want to replace the painted area with..."
+          rows="3"
+        ></textarea>
+        <div class="ai-icon-buttons">
+          <button type="button" class="ai-icon-btn" data-action="replace-prompt" title="Copy prompt only">
+            <svg viewBox="0 0 48 48" aria-hidden="true" class="ai-icon">
+              <!-- Squiggly lines icon -->
+              <path d="M8 12 Q 14 8, 20 12 T 32 12 T 44 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M8 20 Q 14 16, 20 20 T 32 20 T 44 20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M8 28 Q 14 24, 20 28 T 32 28 T 44 28" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M8 36 Q 14 32, 20 36 T 32 36 T 44 36" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+            <span class="ai-icon-label">Copy Prompt</span>
+          </button>
+          
+          <button type="button" class="ai-icon-btn" data-action="replace-image" title="Copy image only">
+            <svg viewBox="0 0 48 48" aria-hidden="true" class="ai-icon">
+              <!-- Sun with rays icon -->
+              <circle cx="24" cy="16" r="6" fill="currentColor"/>
+              <line x1="24" y1="6" x2="24" y2="2" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="30.5" y1="9.5" x2="33.5" y2="6.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="34" y1="16" x2="38" y2="16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="30.5" y1="22.5" x2="33.5" y2="25.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="17.5" y1="9.5" x2="14.5" y2="6.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="14" y1="16" x2="10" y2="16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="17.5" y1="22.5" x2="14.5" y2="25.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- Mountain/image indicator -->
+              <rect x="6" y="30" width="36" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+              <path d="M6 44 L 14 36 L 22 40 L 30 32 L 42 42" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="ai-icon-label">Copy Image</span>
+          </button>
+          
+          <button type="button" class="ai-icon-btn" data-action="replace-both" title="Copy prompt and image">
+            <svg viewBox="0 0 48 48" aria-hidden="true" class="ai-icon">
+              <!-- Combined: sun + squiggly lines -->
+              <circle cx="30" cy="10" r="4" fill="currentColor"/>
+              <line x1="30" y1="3" x2="30" y2="1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="34.5" y1="5.5" x2="36.5" y2="3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="37" y1="10" x2="39" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="25.5" y1="5.5" x2="23.5" y2="3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="23" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M6 22 Q 10 19, 14 22 T 22 22 T 30 22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M6 28 Q 10 25, 14 28 T 22 28 T 30 28" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M6 34 Q 10 31, 14 34 T 22 34 T 30 34" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M6 40 Q 10 37, 14 40 T 22 40 T 30 40" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+            <span class="ai-icon-label">Copy Both</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Close button -->
+      <button type="button" id="closeAiMenu" class="ai-menu-close" title="Close menu">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
 
   <script src="version.js"></script>
   <script src="script.js"></script>
