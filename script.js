@@ -24,7 +24,7 @@
    const brushReadout = document.getElementById('brushReadout');
    const undoBtn = document.getElementById('undoMask');
    const redoBtn = document.getElementById('redoMask');
-   const saveCombined = document.getElementById('saveCombined');
+   const promptAi = document.getElementById('promptAi');
    
    // Layout
    const controlsBar = document.querySelector('.controls');
@@ -642,7 +642,7 @@
    /* =========================
       ===== Save & Export =====
       ========================= */
-   async function handleSave() {
+   async function generateAiPrompt() {
      if (!originalImage) {
        alert('Upload an image first.');
        return;
@@ -941,7 +941,7 @@
    });
    
    // Save button
-   saveCombined?.addEventListener('click', handleSave);
+   promptAi?.addEventListener('click', generateAiPrompt);
    
    // Clipboard operations
    if (copyPromptBtn && copyImageBtn && copyChatGPTBtn && promptTextarea) {
