@@ -82,6 +82,15 @@ h1 {
   justify-content: center;
 }
 
+/* Icon group that wraps together */
+.icon-group-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap);
+  align-items: center;
+  justify-content: center;
+}
+
 /* Icon buttons */
 .icon-btn {
   width: 38px;
@@ -143,6 +152,7 @@ h1 {
   border: 1px solid #ddd;
   background: var(--bg);
   border-radius: 10px;
+  max-width: 200px;
 }
 
 .brush span:first-child {
@@ -150,8 +160,13 @@ h1 {
   font-size: 14px;
 }
 
+/* Add specific width constraint to the slider */
+#brushSize {
+  max-width: 80px;
+}
+
 #brushReadout {
-  min-width: 44px;
+  min-width: 38px;
   text-align: right;
   color: #555;
 }
@@ -512,5 +527,30 @@ main {
   
   .ai-icon-label {
     font-size: 12px;
+  }
+}
+
+/* Responsive brush slider - gets smaller on narrow screens */
+@media (max-width: 900px) {
+  #brushSize {
+    max-width: 60px;
+  }
+  
+  .brush {
+    max-width: 170px;
+  }
+  
+  #brushReadout {
+    min-width: 32px;
+  }
+}
+
+@media (max-width: 700px) {
+  #brushSize {
+    max-width: 50px;
+  }
+  
+  .brush {
+    max-width: 150px;
   }
 }
